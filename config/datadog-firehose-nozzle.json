@@ -17,5 +17,6 @@
   "IdleTimeoutSeconds" : 60,
   "CloudControllerEndpoint": "string",
   "AppMetrics": true,
-  "NumWorkers": 1
+  "NumWorkers": 1,
+  "Proxy": ""
 }

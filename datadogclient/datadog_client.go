@@ -2,8 +2,10 @@ package datadogclient
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 
@@ -48,6 +50,7 @@ func New(
 	ip string,
 	writeTimeout time.Duration,
 	maxPostBytes uint32,
+	proxy string,
 	log *gosteno.Logger,
 ) *Client {
 	ourTags := []string{
@@ -55,8 +58,9 @@ func New(
 		"ip:" + ip,
 	}
 
-	httpClient := &http.Client{
-		Timeout: writeTimeout,
+	httpClient, err := mkHttpClient(proxy, writeTimeout)
+	if err != nil {
+		log.Warnf("there was an error in setting up the proxy, the nozzle will continue without using the proxy: %v", err)
 	}
 
 	return &Client{
@@ -226,4 +230,26 @@ func (c *Client) addInternalMetric(name string, value uint64) {
 	c.mLock.Lock()
 	c.metricPoints[key] = mValue
 	c.mLock.Unlock()
+}
+
+func mkHttpClient(proxy string, writeTimeout time.Duration) (*http.Client, error) {
+	httpClient := &http.Client{
+		Timeout: writeTimeout,
+	}
+	if proxy == "" {
+		return httpClient, nil
+	}
+
+	proxyUrl, err := url.Parse(proxy)
+	if err != nil {
+		// be forgiving of this error
+		return httpClient, err
+	}
+
+	httpClient.Transport = &http.Transport{
+		Proxy:           http.ProxyURL(proxyUrl),
+		TLSClientConfig: &tls.Config{},
+	}
+
+	return httpClient, nil
 }

@@ -74,6 +74,7 @@ func (d *DatadogFirehoseNozzle) createClient() *datadogclient.Client {
 		ipAddress,
 		time.Duration(d.config.DataDogTimeoutSeconds)*time.Second,
 		d.config.FlushMaxBytes,
+		d.config.Proxy,
 		d.log,
 	)
 

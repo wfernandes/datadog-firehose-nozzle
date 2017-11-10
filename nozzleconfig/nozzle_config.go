@@ -34,6 +34,7 @@ type NozzleConfig struct {
 	AppMetrics              bool
 	NumWorkers              int
 	GrabInterval            int
+	Proxy                   string
 }
 
 func Parse(configPath string) (*NozzleConfig, error) {
@@ -66,6 +67,8 @@ func Parse(configPath string) (*NozzleConfig, error) {
 	overrideWithEnvBool("NOZZLE_INSECURESSLSKIPVERIFY", &config.InsecureSSLSkipVerify)
 	overrideWithEnvBool("NOZZLE_DISABLEACCESSCONTROL", &config.DisableAccessControl)
 	overrideWithEnvUint32("NOZZLE_IDLETIMEOUTSECONDS", &config.IdleTimeoutSeconds)
+	overrideWithEnvVar("HTTP_PROXY", &config.Proxy)
+	overrideWithEnvVar("HTTPS_PROXY", &config.Proxy)
 
 	if config.MetricPrefix == "" {
 		config.MetricPrefix = "cloudfoundry.nozzle."
